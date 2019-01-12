@@ -14,8 +14,8 @@ For x = 2 To LastRow
     Dim rng As range
     Set rng = range("L" & x)
     
-        If InStr(rng.Value, "n/a") > 0 Then
-            GoTo NextIteration
+        If InStr(rng.Value, "n/a") > 0 Then  
+                GoTo NextIteration 'skips the excel cells with "n/a"
         End If
         
             mailTo = range("L" & x)

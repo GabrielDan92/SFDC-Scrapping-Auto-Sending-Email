@@ -1,4 +1,3 @@
-Attribute VB_Name = "SendEmail"
 Sub SendingEmail()
 
 'finds the last spreadsheet's row
@@ -14,15 +13,17 @@ For x = 2 To LastRow
     Dim rng As range
     Set rng = range("L" & x)
     
-        If InStr(rng.Value, "n/a") > 0 Then  
-                GoTo NextIteration 'skips the excel cells with "n/a"
+        If InStr(rng.Value, "n/a") > 0 Or IsEmpty(rng.Value) Then
+            GoTo NextIteration  'if the cell is empty or it has "n/a" as value, skip it and go to the next row
         End If
         
             mailTo = range("L" & x)
             SON = range("A" & x)
             ownerName = range("M" & x)
-            contactEmail = range("F" & x)
-            contactEmail2 = range("G" & x)
+'            contactEmail = range("F" & x)
+'            contactEmail2 = range("G" & x)
+            contactEmail = range("C" & x)
+            contactEmail2 = range("D" & x)
             ContactName = range("N" & x)
             contactAccount = range("O" & x)
     
@@ -33,7 +34,7 @@ For x = 2 To LastRow
             Set myMail = outlookApp.CreateItem(olMailItem)
     
                 myMail.To = mailTo
-                'myMail.CC = ""
+                myMail.CC = ""
                 myMail.Subject = "Undeliverable e-mail address; SON: " & SON
                 'myMail.SentOnBehalfOfName = ""
     
@@ -45,9 +46,11 @@ For x = 2 To LastRow
                 & "Contact Name: " & ContactName & " <br>" _
                 & "Undeliverable E-mail(s): " & contactEmail & " " & contactEmail2 & " <br>" _
                 & "Contact Account: " & contactAccount & " <br><p>" _
+                & "Please use the <b>Reply All</b> option when sending the correct email address back to us. Thank you for understanding! <br><p>" _
+                & " <br>" _
                 & " <br>" _
                 & "Best regards, <br><p>" _
-                & "Gabriel Pintoiu <br>" _
+                & "Gabriel Dan <br>" _
                 & "Global Business Operations"
     
     

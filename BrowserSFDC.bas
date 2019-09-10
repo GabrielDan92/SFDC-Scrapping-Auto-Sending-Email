@@ -149,7 +149,7 @@ For y = 2 To LastRow
     (".oRight .bPageBlock .pbBody .pbSubsection table:first-child tbody:first-child .dataCol div:first-child span:first-child a:first-child").Click 'clicks on the account's owner hyperlink
     
                 On Error Resume Next
-                Do While ie.document.getElementById("tailBreadcrumbNode") Is Nothing                                                                 'wait for the owner's name to appear
+                Do While ie.document.getElementById("tailBreadcrumbNode") Is Nothing                                                                'wait for the owner's name to appear
                     DoEvents
                     Sleep 1000
                     secondsCounter = secondsCounter + 1
@@ -159,7 +159,7 @@ For y = 2 To LastRow
                 Loop
                 On Error GoTo 0
             
-                secondsCounter = 0                                                                                                                   'reinitialize the secondsCounter variable to 0
+                secondsCounter = 0                                                                                                                  'reinitialize the secondsCounter variable to 0
     
     Range("M" & y) = ie.document.getElementById("tailBreadcrumbNode").innerHTML                                                                     'assigns the owner's name to the M row's cell
     Range("L" & y) = ie.document.querySelector(".contactInfo .profileSectionBody .profileSectionData a:first-child").innerHTML                      'assigns the owner's email to the L row's cell
@@ -178,10 +178,9 @@ Set ie = Nothing
 MinutesElapsed = Format((Timer - StartTime) / 86400, "hh:mm:ss")                                                                                    'Determine the runtime
 MsgBox ("Script completed in: " & MinutesElapsed)
 
-'Call SendingEmail '>> if I want to send the emails automatically afterwards
+'Call SendingEmail                                                                                                                                  'if I want to send the emails automatically afterwards
 
 End Sub
-
 
 Sub ieBusy(ie As Object)
     Do While ie.Busy Or ie.READYSTATE <> 4
@@ -189,7 +188,7 @@ Sub ieBusy(ie As Object)
     Loop
 End Sub
 
-Function onlyDigits(s As String) As String 'returns only the digits from a string with multiple characters
+Function onlyDigits(s As String) As String                                                                                                          'returns only the digits from a string with multiple characters
     Dim retval As String
     Dim i As Integer
     retval = ""

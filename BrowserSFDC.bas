@@ -10,16 +10,24 @@ Dim ie As InternetExplorer
 Dim htmlDoc As Object
 StartTime = Timer
 Dim secondsCounter As Integer
-
+Dim rng As Range
+Dim Columns As Variant
+Columns = Array("L", "M", "N", "O", "P")
 
 Dim LastRow As Long
     With activesheet
         LastRow = .Cells(.Rows.Count, "A").End(xlUp).Row                                                                                            'finds the last spreadsheet's row
 End With
+
+Range("L2:P2").Select                                                                                                                                  'removes previous data from L-P rows
+Range(Selection, Selection.End(xlToRight)).Select
+Range(Selection, Selection.End(xlDown)).Select
+Selection.ClearContents
             
 Set ie = New InternetExplorer
 ie.Visible = True
 ie.Navigate "https://login.salesforce.com/"                                                                                                         'goes to the SFDC's login page
+
 
 On Error Resume Next
         Set htmlDoc = ie.document
@@ -35,15 +43,15 @@ On Error Resume Next
         Set htmlDoc = ie.document
         TabTitle = htmlDoc.Title                                                                                                                    'get the browser tab title
     Loop
-On Error GoTo 0
+On Error GoTo -1
 
 secondsCounter = 0                                                                                                                                  'reinitialize the secondsCounter variable to 0
 ie.document.getElementById("Login").Click                                                                                                           'clicks on the Login SFDC button
 
 For y = 2 To LastRow
+On Error GoTo Err_Clear
 
     x = Range("C" & y)
-    Dim rng As Range
     Set rng = Range("L" & y)
     If IsEmpty(rng.Value) = False Then
         GoTo NextIteration                                                                                                                          'if the cell is not empty, skip it and go to the next row
@@ -58,7 +66,7 @@ For y = 2 To LastRow
                 Exit Do
             End If
         Loop
-    On Error GoTo 0
+    On Error GoTo -1
     
     secondsCounter = 0                                                                                                                              'reinitialize the secondsCounter variable to 0
     
@@ -75,11 +83,13 @@ For y = 2 To LastRow
                         Exit Do
                     End If
                 Loop
-                On Error GoTo 0
+                On Error GoTo -1
     
                 secondsCounter = 0                                                                                                                  'reinitialize the secondsCounter variable to 0
     
-    Sleep 1500
+    Call ieBusy(ie)
+    Sleep 2000
+    
     ie.document.querySelector _
     ("#phSearchForm .headerSearchContainer .headerSearchLeftRoundedCorner .headerSearchRightRoundedCorner input:first-child").Click                 'click on the search button
     
@@ -92,7 +102,7 @@ For y = 2 To LastRow
                         Exit Do
                     End If
                 Loop
-                On Error GoTo 0
+                On Error GoTo -1
     
                 secondsCounter = 0                                                                                                                  'reinitialize the secondsCounter variable to 0
                 
@@ -100,8 +110,12 @@ For y = 2 To LastRow
     Call ieBusy(ie)
     Range("P" & y) = ie.document.querySelector(".searchEntityList .itemLink .item .linkSelector .resultCount").innerHTML                            'how many contacts were found in SFDC
     Range("P" & y) = onlyDigits(Range("P" & y))                                                                                                     'returns the contacts count (only the digits)
+        Set rng = Range("P" & y)
+        If IsEmpty(rng.Value) Then                                                                                                                  'set empty cells to "n/a"
+            Range("P" & y) = "n/a"
+        End If
     
-    If Range("P" & y) = 0 Then                                                                                                                      'if the contact person was not found
+    If Range("P" & y) = 0 Or InStr(rng.Value, "n/a") Then                                                                                           'if the contact person was not found
         Range("N" & y) = "n/a"
         Range("O" & y) = "n/a"
         Range("M" & y) = "n/a"
@@ -121,12 +135,20 @@ For y = 2 To LastRow
                         Exit Do
                     End If
                 Loop
-                On Error GoTo 0
+                On Error GoTo -1
             
                 secondsCounter = 0                                                                                                                  'reinitialize the secondsCounter variable to 0
     
     Range("N" & y) = ie.document.querySelector(".dataCol a:first-child").innerHTML                                                                  'assign the contact person's account to the N row
+        Set rng = Range("N" & y)
+        If IsEmpty(rng.Value) Then                                                                                                                  'set empty cells to "n/a"
+            Range("N" & y) = "n/a"
+        End If
     Range("O" & y) = ie.document.querySelector(".textBlock h2:first-child").innerHTML                                                               'assign the contact person's name to the O row
+        Set rng = Range("O" & y)
+        If IsEmpty(rng.Value) Then                                                                                                                  'set empty cells to "n/a"
+            Range("O" & y) = "n/a"
+        End If
     ie.document.querySelector(".dataCol a:first-child").Click                                                                                       'clicks on the contact's account hyperlink
     
                 On Error Resume Next
@@ -140,13 +162,14 @@ For y = 2 To LastRow
                         Exit Do
                     End If
                 Loop
-                On Error GoTo 0
+                On Error GoTo -1
             
                 secondsCounter = 0                                                                                                                  'reinitialize the secondsCounter variable to 0
     
         
     ie.document.querySelector _
     (".oRight .bPageBlock .pbBody .pbSubsection table:first-child tbody:first-child .dataCol div:first-child span:first-child a:first-child").Click 'clicks on the account's owner hyperlink
+
     
                 On Error Resume Next
                 Do While ie.document.getElementById("tailBreadcrumbNode") Is Nothing                                                                'wait for the owner's name to appear
@@ -157,16 +180,27 @@ For y = 2 To LastRow
                         Exit Do
                     End If
                 Loop
-                On Error GoTo 0
+                On Error GoTo -1
             
                 secondsCounter = 0                                                                                                                  'reinitialize the secondsCounter variable to 0
     
     Range("M" & y) = ie.document.getElementById("tailBreadcrumbNode").innerHTML                                                                     'assigns the owner's name to the M row's cell
+    Set rng = Range("M" & y)
+        If IsEmpty(rng.Value) Then                                                                                                                  'set empty cells to "n/a"
+            Range("M" & y) = "n/a"
+        End If
     Range("L" & y) = ie.document.querySelector(".contactInfo .profileSectionBody .profileSectionData a:first-child").innerHTML                      'assigns the owner's email to the L row's cell
+        Set rng = Range("L" & y)
+        If IsEmpty(rng.Value) Then                                                                                                                  'set empty cells to "n/a"
+            Range("L" & y) = "n/a"
+        End If
     
     sString = Range("M" & y)
     sArray = Split(sString, "&")
     Range("M" & y) = sArray(0)                                                                                                                      'remove extra characters from the html code
+    
+Err_Clear:
+    GoTo NextIteration
     
 NextIteration:
 Next y
@@ -174,7 +208,6 @@ Next y
 
 ie.Quit                                                                                                                                             'close the browser
 Set ie = Nothing
-
 MinutesElapsed = Format((Timer - StartTime) / 86400, "hh:mm:ss")                                                                                    'Determine the runtime
 MsgBox ("Script completed in: " & MinutesElapsed)
 
